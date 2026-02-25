@@ -33,7 +33,7 @@ const Sidebar = () => {
     authContext.dispatch({ type: "LOGOUT" });
     localStorage.removeItem("user");
     document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    window.location.href = "/admin/login";
+    window.location.href = "/";
   }
 
   const isActive = (path) => {

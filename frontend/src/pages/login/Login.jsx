@@ -68,7 +68,7 @@ const Login = () => {
           redirectPath = "/sale";
           break;
         default:
-          redirectPath = "/admin/login";
+          redirectPath = "/";
       }
       
       console.log("Cookie set, redirecting to", redirectPath)

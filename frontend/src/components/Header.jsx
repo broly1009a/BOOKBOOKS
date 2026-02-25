@@ -9,6 +9,7 @@ import { getAllCartByUserId, addToCart, updateCartItem } from "../services/CartS
 import { getWishlistByUserId } from "../services/WishlistService";
 import SearchBar from "./Home/SearchBar";
 import SearchResult from "./Home/SearchResult";
+import { jwtDecode } from "jwt-decode";
 const Header = ({ cookies, setCookies, removeCookies, cart, cartChange, setCartChange }) => {
 
     const [formData, setFormData] = useState({
@@ -109,10 +110,49 @@ const Header = ({ cookies, setCookies, removeCookies, cart, cartChange, setCartC
         }
         let account = { email: formData.si_email, password: formData.si_password }
         login(account).then(res => {
+            console.log('=== HEADER LOGIN RESPONSE ===')
+            console.log('Token:', res.data.token)
+            
+            const user = jwtDecode(res.data.token)
+            console.log('Decoded User:', user)
+            console.log('Authorities:', user.authorities)
+            
             setCookies('authToken', res.data.token)
-            window.location.reload()
+            
+            // Lấy role từ authorities
+            let userRole = null;
+            if (user.authorities && user.authorities.length > 0) {
+                userRole = user.authorities[0]?.authority;
+                console.log('Raw Role:', userRole)
+                
+                // Remove 'ROLE_' prefix if present
+                if (userRole && userRole.startsWith('ROLE_')) {
+                    userRole = userRole.substring(5);
+                }
+            }
+            console.log('Processed Role:', userRole)
+            
+            // Navigate theo role
+            let navigatePath = '/'
+            switch(userRole) {
+                case 'ADMIN':
+                    navigatePath = '/admin'
+                    break;
+                case 'MANAGER':
+                    navigatePath = '/manager'
+                    break;
+                case 'SALE':
+                    navigatePath = '/sale'
+                    break;
+                default:
+                    navigatePath = '/'
+                    break;
+            }
+            console.log('Navigating to:', navigatePath)
+            window.location.href = navigatePath
         })
             .catch(err => {
+                console.error('Header Login Error:', err)
                 setError((prevData) => ({ ...prevData, loginError: true }))
             })
 

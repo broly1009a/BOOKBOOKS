@@ -59,7 +59,7 @@ const Navbar = () => {
   const handleLogout = () => {
     authDispatch({ type: "LOGOUT" });
     localStorage.removeItem('authToken');
-    navigate('/admin/login');
+    navigate('/');
   };
 
   const handleProfileClick = () => {

@@ -33,12 +33,12 @@ const RoleBasedRoute = ({ children, allowedRoles }) => {
       isAuthenticated = true;
     } catch (error) {
       console.error("Invalid token:", error);
-      return <Navigate to="/admin/login" />;
+      return <Navigate to="/" />;
     }
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" />;
+    return <Navigate to="/" />;
   }
 
   // Check if user role is in allowed roles
@@ -52,7 +52,7 @@ const RoleBasedRoute = ({ children, allowedRoles }) => {
       case 'SALE':
         return <Navigate to="/sale" />;
       default:
-        return <Navigate to="/admin/login" />;
+        return <Navigate to="/" />;
     }
   }
 

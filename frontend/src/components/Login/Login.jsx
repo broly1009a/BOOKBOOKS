@@ -33,13 +33,36 @@ const Login = ({ setCookies }) => {
             // Lưu vào cookie
             setCookies('authToken', res.data.token, { path: '/' })
             
+            // Lấy role từ authorities
+            let userRole = null;
+            if (user.authorities && user.authorities.length > 0) {
+                userRole = user.authorities[0]?.authority;
+                // Remove 'ROLE_' prefix if present
+                if (userRole && userRole.startsWith('ROLE_')) {
+                    userRole = userRole.substring(5);
+                }
+            }
             
-            if (user.authorities && user.authorities[0]?.authority === "ADMIN") {
+            // Dispatch login cho ADMIN
+            if (userRole === "ADMIN") {
                 dispatch({ type: "LOGIN", payload: user})
             }
             
-          
-            navigate('/')
+            // Navigate theo role
+            switch(userRole) {
+                case 'ADMIN':
+                    navigate('/admin')
+                    break;
+                case 'MANAGER':
+                    navigate('/manager')
+                    break;
+                case 'SALE':
+                    navigate('/sale')
+                    break;
+                default:
+                    navigate('/')
+                    break;
+            }
         })
             .catch(err => {
                 setError((prevData) => ({ ...prevData, loginError: true }))
