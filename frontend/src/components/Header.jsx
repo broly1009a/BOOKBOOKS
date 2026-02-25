@@ -302,7 +302,7 @@ const Header = ({ cookies, setCookies, removeCookies, cart, cartChange, setCartC
                                 </div>
                             </div>
                             <div className="desktop-cart-wrapper" >
-                                <span href="" className="hd-cart">
+                                <span className="hd-cart">
                                     <i onClick={toggleSmallCartModel} style={{ cursor: 'pointer' }} className="fa-solid fa-bag-shopping"></i>
                                     <span className="hd-cart-count">{cart?.orderDetails?.reduce((total, item) => (total + item.amount), 0)}</span>
                                 </span>
