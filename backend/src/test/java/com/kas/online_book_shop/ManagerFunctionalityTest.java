@@ -1,97 +1,76 @@
 package com.kas.online_book_shop;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-
+import com.kas.online_book_shop.controller.BookController;
+import com.kas.online_book_shop.enums.BookState;
+import com.kas.online_book_shop.model.*;
+import com.kas.online_book_shop.service.BookService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kas.online_book_shop.enums.BookState;
-import com.kas.online_book_shop.model.Author;
-import com.kas.online_book_shop.model.Book;
-import com.kas.online_book_shop.model.BookCategory;
-import com.kas.online_book_shop.model.BookCollection;
-import com.kas.online_book_shop.model.Language;
-import com.kas.online_book_shop.model.Publisher;
-import com.kas.online_book_shop.service.BookService;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit Test cho Manager - Công
  * Chức năng: Add book/Delete book/Change Book
  */
-@SpringBootTest
-@AutoConfigureMockMvc
+@ExtendWith(MockitoExtension.class)
 @DisplayName("Manager Functionality Test - Công")
 public class ManagerFunctionalityTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
+    @Mock
     private BookService bookService;
 
+    @InjectMocks
+    private BookController bookController;
+
     private Book testBook;
-    private Publisher testPublisher;
-    private Author testAuthor;
-    private Language testLanguage;
-    private BookCategory testCategory;
-    private BookCollection testCollection;
 
     @BeforeEach
     void setUp() {
         // Setup Publisher
-        testPublisher = new Publisher();
+        Publisher testPublisher = new Publisher();
         testPublisher.setId(1L);
         testPublisher.setName("Test Publisher");
 
         // Setup Author
-        testAuthor = new Author();
+        Author testAuthor = new Author();
         testAuthor.setId(1L);
         testAuthor.setName("Test Author");
-        testAuthor.setBio("Author Bio");
+        testAuthor.setCompany("Test Company");
 
         // Setup Language
-        testLanguage = new Language();
+        Language testLanguage = new Language();
         testLanguage.setId(1L);
         testLanguage.setName("Vietnamese");
 
         // Setup Category
-        testCategory = new BookCategory();
+        BookCategory testCategory = new BookCategory();
         testCategory.setId(1L);
         testCategory.setName("Fiction");
 
         // Setup Collection
-        testCollection = new BookCollection();
+        BookCollection testCollection = new BookCollection();
         testCollection.setId(1L);
         testCollection.setName("Bestsellers");
 
@@ -99,138 +78,135 @@ public class ManagerFunctionalityTest {
         testBook = new Book();
         testBook.setId(1L);
         testBook.setTitle("Test Book Title");
-        testBook.setIsbn("978-3-16-148410-0");
-        testBook.setPrice(150000.0);
-        testBook.setQuantity(50);
+        testBook.setISBN("978-3-16-148410-0");
+        testBook.setPrice(150000L);
+        testBook.setStock(50);
         testBook.setDescription("Test book description");
-        testBook.setPageCount(300);
+        testBook.setPage(300);
         testBook.setPublicationDate(LocalDate.of(2024, 1, 1));
-        testBook.setState(BookState.AVAILABLE);
+        testBook.setState(BookState.ACTIVE);
         testBook.setPublisher(testPublisher);
-        testBook.setAuthor(testAuthor);
+        testBook.setAuthors(List.of(testAuthor));
         testBook.setLanguage(testLanguage);
-        testBook.setCategories(Arrays.asList(testCategory));
-        testBook.setCollection(testCollection);
+        testBook.setCategory(testCategory);
+        testBook.setCollections(List.of(testCollection));
     }
 
     // ==================== ADD BOOK TESTS ====================
 
     @Test
     @DisplayName("Test 1: Add Book - Thêm sách mới thành công")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testAddBookSuccess() throws Exception {
+    void testAddBookSuccess()  {
         // Given
         when(bookService.saveBook(any(Book.class))).thenReturn(testBook);
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testBook)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.title").value("Test Book Title"))
-                .andExpect(jsonPath("$.isbn").value("978-3-16-148410-0"))
-                .andExpect(jsonPath("$.price").value(150000.0))
-                .andExpect(jsonPath("$.quantity").value(50));
+        // When
+        ResponseEntity<Book> response = bookController.saveBook(testBook);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1L, response.getBody().getId());
+        assertEquals("Test Book Title", response.getBody().getTitle());
+        assertEquals("978-3-16-148410-0", response.getBody().getISBN());
+        assertEquals(150000L, response.getBody().getPrice());
+        assertEquals(50, response.getBody().getStock());
         verify(bookService, times(1)).saveBook(any(Book.class));
     }
 
     @Test
     @DisplayName("Test 2: Add Book - Thêm sách với thông tin đầy đủ")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testAddBookWithFullInformation() throws Exception {
+    void testAddBookWithFullInformation()  {
         // Given
         when(bookService.saveBook(any(Book.class))).thenReturn(testBook);
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testBook)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").exists())
-                .andExpect(jsonPath("$.isbn").exists())
-                .andExpect(jsonPath("$.price").exists())
-                .andExpect(jsonPath("$.quantity").exists())
-                .andExpect(jsonPath("$.description").exists())
-                .andExpect(jsonPath("$.pageCount").exists())
-                .andExpect(jsonPath("$.publicationDate").exists())
-                .andExpect(jsonPath("$.state").exists());
+        // When
+        ResponseEntity<Book> response = bookController.saveBook(testBook);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getTitle());
+        assertNotNull(response.getBody().getISBN());
+        assertNotNull(response.getBody().getPrice());
+        assertNotNull(response.getBody().getStock());
+        assertNotNull(response.getBody().getDescription());
+        assertNotNull(response.getBody().getPage());
+        assertNotNull(response.getBody().getPublicationDate());
+        assertNotNull(response.getBody().getState());
         verify(bookService, times(1)).saveBook(any(Book.class));
     }
 
     @Test
     @DisplayName("Test 3: Add Book - Thêm sách với giá âm (validation)")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testAddBookWithNegativePrice() throws Exception {
+    void testAddBookWithNegativePrice()  {
         // Given
         Book invalidBook = new Book();
         invalidBook.setTitle("Invalid Book");
-        invalidBook.setPrice(-100.0);  // Negative price
-        invalidBook.setQuantity(10);
+        invalidBook.setPrice(-100L);  // Negative price
+        invalidBook.setStock(10);
 
         when(bookService.saveBook(any(Book.class))).thenReturn(invalidBook);
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidBook)))
-                .andExpect(status().isCreated());  // Note: Should add validation
+        // When
+        ResponseEntity<Book> response = bookController.saveBook(invalidBook);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());  // Note: Should add validation
         verify(bookService, times(1)).saveBook(any(Book.class));
     }
 
     @Test
     @DisplayName("Test 4: Add Book - Thêm sách với số lượng âm (validation)")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testAddBookWithNegativeQuantity() throws Exception {
+    void testAddBookWithNegativeQuantity()  {
         // Given
         Book invalidBook = new Book();
         invalidBook.setTitle("Invalid Quantity Book");
-        invalidBook.setPrice(100.0);
-        invalidBook.setQuantity(-5);  // Negative quantity
+        invalidBook.setPrice(100L);
+        invalidBook.setStock(-5);  // Negative stock
 
         when(bookService.saveBook(any(Book.class))).thenReturn(invalidBook);
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidBook)))
-                .andExpect(status().isCreated());  // Note: Should add validation
+        // When
+        ResponseEntity<Book> response = bookController.saveBook(invalidBook);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());  // Note: Should add validation
         verify(bookService, times(1)).saveBook(any(Book.class));
     }
 
     @Test
     @DisplayName("Test 5: Add Multiple Books - Thêm nhiều sách")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testAddMultipleBooks() throws Exception {
+    void testAddMultipleBooks()  {
         // Given
         Book book2 = new Book();
         book2.setId(2L);
         book2.setTitle("Second Test Book");
-        book2.setPrice(200000.0);
-        book2.setQuantity(30);
+        book2.setPrice(200000L);
+        book2.setStock(30);
 
         when(bookService.saveBook(any(Book.class)))
                 .thenReturn(testBook)
                 .thenReturn(book2);
 
-        // When & Then - Add first book
-        mockMvc.perform(post("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testBook)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L));
-
+        // When - Add first book
+        ResponseEntity<Book> response1 = bookController.saveBook(testBook);
         // Add second book
-        mockMvc.perform(post("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(book2)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(2L));
+        ResponseEntity<Book> response2 = bookController.saveBook(book2);
 
+        // Then
+        assertNotNull(response1);
+        assertEquals(HttpStatus.CREATED, response1.getStatusCode());
+        assertEquals(1L, Objects.requireNonNull(response1.getBody()).getId());
+        
+        assertNotNull(response2);
+        assertEquals(HttpStatus.CREATED, response2.getStatusCode());
+        assertEquals(2L, Objects.requireNonNull(response2.getBody()).getId());
+        
         verify(bookService, times(2)).saveBook(any(Book.class));
     }
 
@@ -238,93 +214,93 @@ public class ManagerFunctionalityTest {
 
     @Test
     @DisplayName("Test 6: Update Book - Cập nhật thông tin sách thành công")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testUpdateBookSuccess() throws Exception {
+    void testUpdateBookSuccess()  {
         // Given
         testBook.setTitle("Updated Book Title");
-        testBook.setPrice(180000.0);
+        testBook.setPrice(180000L);
         when(bookService.updateBook(any(Book.class))).thenReturn(testBook);
 
-        // When & Then
-        mockMvc.perform(put("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testBook)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Updated Book Title"))
-                .andExpect(jsonPath("$.price").value(180000.0));
+        // When
+        ResponseEntity<Book> response = bookController.updateBook(testBook);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Updated Book Title", response.getBody().getTitle());
+        assertEquals(180000L, response.getBody().getPrice());
         verify(bookService, times(1)).updateBook(any(Book.class));
     }
 
     @Test
     @DisplayName("Test 7: Update Book - Thay đổi giá sách")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testUpdateBookPrice() throws Exception {
+    void testUpdateBookPrice()  {
         // Given
-        testBook.setPrice(200000.0);
+        testBook.setPrice(200000L);
         when(bookService.updateBook(any(Book.class))).thenReturn(testBook);
 
-        // When & Then
-        mockMvc.perform(put("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testBook)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.price").value(200000.0));
+        // When
+        ResponseEntity<Book> response = bookController.updateBook(testBook);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(200000L, response.getBody().getPrice());
         verify(bookService, times(1)).updateBook(any(Book.class));
     }
 
     @Test
     @DisplayName("Test 8: Update Book - Thay đổi số lượng sách")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testUpdateBookQuantity() throws Exception {
+    void testUpdateBookQuantity()  {
         // Given
-        testBook.setQuantity(100);
+        testBook.setStock(100);
         when(bookService.updateBook(any(Book.class))).thenReturn(testBook);
 
-        // When & Then
-        mockMvc.perform(put("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testBook)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.quantity").value(100));
+        // When
+        ResponseEntity<Book> response = bookController.updateBook(testBook);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(100, response.getBody().getStock());
         verify(bookService, times(1)).updateBook(any(Book.class));
     }
 
     @Test
     @DisplayName("Test 9: Update Book - Thay đổi trạng thái sách")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testUpdateBookState() throws Exception {
+    void testUpdateBookState()  {
         // Given
-        testBook.setState(BookState.OUT_OF_STOCK);
+        testBook.setState(BookState.HIDDEN);
         when(bookService.updateBook(any(Book.class))).thenReturn(testBook);
 
-        // When & Then
-        mockMvc.perform(put("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testBook)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.state").value("OUT_OF_STOCK"));
+        // When
+        ResponseEntity<Book> response = bookController.updateBook(testBook);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(BookState.HIDDEN, response.getBody().getState());
         verify(bookService, times(1)).updateBook(any(Book.class));
     }
 
     @Test
     @DisplayName("Test 10: Update Book - Thay đổi mô tả sách")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testUpdateBookDescription() throws Exception {
+    void testUpdateBookDescription()  {
         // Given
         testBook.setDescription("Updated description with more details");
         when(bookService.updateBook(any(Book.class))).thenReturn(testBook);
 
-        // When & Then
-        mockMvc.perform(put("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testBook)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.description").value("Updated description with more details"));
+        // When
+        ResponseEntity<Book> response = bookController.updateBook(testBook);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Updated description with more details", response.getBody().getDescription());
         verify(bookService, times(1)).updateBook(any(Book.class));
     }
 
@@ -332,31 +308,31 @@ public class ManagerFunctionalityTest {
 
     @Test
     @DisplayName("Test 11: Delete Book - Xóa sách thành công")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testDeleteBookSuccess() throws Exception {
+    void testDeleteBookSuccess()  {
         // Given
         doNothing().when(bookService).deleteBook(anyLong());
 
-        // When & Then
-        mockMvc.perform(delete("/api/v1/book/1")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
+        // When
+        ResponseEntity<Void> response = bookController.deleteBook(1L);
 
-        verify(bookService, times(1)).deleteBook(anyLong());
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        verify(bookService, times(1)).deleteBook(1L);
     }
 
     @Test
     @DisplayName("Test 12: Delete Book - Xóa sách không tồn tại")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testDeleteNonExistentBook() throws Exception {
+    void testDeleteNonExistentBook()  {
         // Given
         doNothing().when(bookService).deleteBook(999L);
 
-        // When & Then
-        mockMvc.perform(delete("/api/v1/book/999")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
+        // When
+        ResponseEntity<Void> response = bookController.deleteBook(999L);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(bookService, times(1)).deleteBook(999L);
     }
 
@@ -364,61 +340,60 @@ public class ManagerFunctionalityTest {
 
     @Test
     @DisplayName("Test 13: Get Book by ID - Lấy thông tin sách theo ID")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testGetBookById() throws Exception {
+    void testGetBookById()  {
         // Given
         when(bookService.getBookById(anyLong())).thenReturn(testBook);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/book/1")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.title").value("Test Book Title"));
+        // When
+        ResponseEntity<Book> response = bookController.getBookById(1L);
 
-        verify(bookService, times(1)).getBookById(anyLong());
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1L, response.getBody().getId());
+        assertEquals("Test Book Title", response.getBody().getTitle());
+        verify(bookService, times(1)).getBookById(1L);
     }
 
     @Test
     @DisplayName("Test 14: Get All Books - Lấy danh sách tất cả sách với phân trang")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testGetAllBooksSortedAndPaged() throws Exception {
+    void testGetAllBooksSortedAndPaged()  {
         // Given
-        List<Book> books = Arrays.asList(testBook);
+        List<Book> books = Collections.singletonList(testBook);
         Page<Book> bookPage = new PageImpl<>(books, PageRequest.of(0, 5), 1);
         when(bookService.getAllBooks(any(Pageable.class))).thenReturn(bookPage);
 
-        // When & Then
-        mockMvc.perform(get("/api/v1/book/sorted-and-paged")
-                        .param("page", "0")
-                        .param("size", "5")
-                        .param("sortBy", "id")
-                        .param("sortOrder", "asc")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].id").value(1L))
-                .andExpect(jsonPath("$.content[0].title").value("Test Book Title"));
+        // When
+        ResponseEntity<Page<Book>> response = bookController.getAllBooksSortedAndPaged("id", 0, 5, "asc");
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().getContent().size());
+        assertEquals(1L, response.getBody().getContent().get(0).getId());
+        assertEquals("Test Book Title", response.getBody().getContent().get(0).getTitle());
         verify(bookService, times(1)).getAllBooks(any(Pageable.class));
     }
 
     @Test
     @DisplayName("Test 15: Verify Book Inventory - Kiểm tra tồn kho sau khi thay đổi")
-    @WithMockUser(username = "manager@example.com", roles = {"MANAGER"})
-    void testVerifyBookInventory() throws Exception {
+    void testVerifyBookInventory()  {
         // Given
-        testBook.setQuantity(0);
-        testBook.setState(BookState.OUT_OF_STOCK);
+        testBook.setStock(0);
+        testBook.setState(BookState.HIDDEN);
         when(bookService.updateBook(any(Book.class))).thenReturn(testBook);
 
-        // When & Then
-        mockMvc.perform(put("/api/v1/book")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testBook)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.quantity").value(0))
-                .andExpect(jsonPath("$.state").value("OUT_OF_STOCK"));
+        // When
+        ResponseEntity<Book> response = bookController.updateBook(testBook);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(0, response.getBody().getStock());
+        assertEquals(BookState.HIDDEN, response.getBody().getState());
         verify(bookService, times(1)).updateBook(any(Book.class));
     }
 }

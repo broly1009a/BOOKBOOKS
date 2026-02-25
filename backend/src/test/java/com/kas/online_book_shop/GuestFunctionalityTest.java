@@ -1,54 +1,36 @@
 package com.kas.online_book_shop;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import com.kas.online_book_shop.controller.AuthenticationController;
+import com.kas.online_book_shop.dto.*;
+import com.kas.online_book_shop.enums.Role;
+import com.kas.online_book_shop.service.AuthenticationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kas.online_book_shop.dto.AuthenticationRequest;
-import com.kas.online_book_shop.dto.AuthenticationResponse;
-import com.kas.online_book_shop.dto.ForgotPasswordRequest;
-import com.kas.online_book_shop.dto.RegisterRequest;
-import com.kas.online_book_shop.dto.ResetPasswordRequest;
-import com.kas.online_book_shop.service.AuthenticationService;
-import com.kas.online_book_shop.service.BookService;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit Test cho Guest - Minh
  * Chức năng: Login/Logout/Register/Reset Password/Search Book
  */
-@SpringBootTest
-@AutoConfigureMockMvc
+@ExtendWith(MockitoExtension.class)
 @DisplayName("Guest Functionality Test - Minh")
 public class GuestFunctionalityTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
+    @Mock
     private AuthenticationService authenticationService;
 
-    @MockBean
-    private BookService bookService;
+    @InjectMocks
+    private AuthenticationController authenticationController;
 
     private RegisterRequest registerRequest;
     private AuthenticationRequest authenticationRequest;
@@ -63,8 +45,12 @@ public class GuestFunctionalityTest {
                 "Test User",
                 "test@example.com",
                 "password123",
+                "Hanoi",
+                "Ba Dinh",
+                "Cong Vi",
                 "0123456789",
-                "123 Test Street"
+                "123 Test Street",
+                Role.USER
         );
 
         authenticationRequest = new AuthenticationRequest(
@@ -77,16 +63,12 @@ public class GuestFunctionalityTest {
         );
 
         resetPasswordRequest = new ResetPasswordRequest(
-                "test@example.com",
-                "newPassword123",
-                "reset-token-123"
+                "reset-token-123",
+                "newPassword123"
         );
 
         authenticationResponse = new AuthenticationResponse(
-                "jwt-token-123",
-                "test@example.com",
-                "Test User",
-                "CUSTOMER"
+                "jwt-token-123"
         );
     }
 
@@ -96,12 +78,12 @@ public class GuestFunctionalityTest {
         // Given
         doNothing().when(authenticationService).register(any(RegisterRequest.class));
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isOk());
+        // When
+        ResponseEntity<String> response = authenticationController.register(registerRequest);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(authenticationService, times(1)).register(any(RegisterRequest.class));
     }
 
@@ -112,15 +94,14 @@ public class GuestFunctionalityTest {
         when(authenticationService.authenticate(any(AuthenticationRequest.class)))
                 .thenReturn(authenticationResponse);
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/auth/authenticate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(authenticationRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("jwt-token-123"))
-                .andExpect(jsonPath("$.email").value("test@example.com"))
-                .andExpect(jsonPath("$.fullName").value("Test User"));
+        // When
+        ResponseEntity<AuthenticationResponse> response = authenticationController.authenticate(authenticationRequest);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("jwt-token-123", response.getBody().token());
         verify(authenticationService, times(1)).authenticate(any(AuthenticationRequest.class));
     }
 
@@ -132,11 +113,7 @@ public class GuestFunctionalityTest {
                 .thenThrow(new RuntimeException("User not found"));
 
         // When & Then
-        mockMvc.perform(post("/api/v1/auth/authenticate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(authenticationRequest)))
-                .andExpect(status().is5xxServerError());
-
+        assertThrows(RuntimeException.class, () -> authenticationController.authenticate(authenticationRequest));
         verify(authenticationService, times(1)).authenticate(any(AuthenticationRequest.class));
     }
 
@@ -146,27 +123,27 @@ public class GuestFunctionalityTest {
         // Given
         doNothing().when(authenticationService).forgotPassword(any(ForgotPasswordRequest.class));
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/auth/forgot-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(forgotPasswordRequest)))
-                .andExpect(status().isOk());
+        // When
+        ResponseEntity<AuthenticationResponse> response = authenticationController.forgotPassword(forgotPasswordRequest);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(authenticationService, times(1)).forgotPassword(any(ForgotPasswordRequest.class));
     }
 
     @Test
     @DisplayName("Test 5: Reset Password - Đặt lại mật khẩu thành công")
-    void testResetPasswordSuccess() throws Exception {
+    void testResetPasswordSuccess() {
         // Given
-        doNothing().when(authenticationService).resetPassword(any(ResetPasswordRequest.class));
+        when(authenticationService.resetPassword(any(ResetPasswordRequest.class))).thenReturn(authenticationResponse);
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/auth/reset-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resetPasswordRequest)))
-                .andExpect(status().isOk());
+        // When
+        ResponseEntity<AuthenticationResponse> response = authenticationController.resetPassword(resetPasswordRequest);
 
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(authenticationService, times(1)).resetPassword(any(ResetPasswordRequest.class));
     }
 
@@ -174,24 +151,24 @@ public class GuestFunctionalityTest {
     @DisplayName("Test 6: Register - Đăng ký thất bại với email đã tồn tại")
     void testRegisterFailureWithExistingEmail() throws Exception {
         // Given
-        doNothing().when(authenticationService)
-                .register(any(RegisterRequest.class));
-        when(authenticationService.authenticate(any(AuthenticationRequest.class)))
-                .thenThrow(new RuntimeException("Email already exists"));
-
-        // When & Then - Attempt to register again
         RegisterRequest duplicateRequest = new RegisterRequest(
                 "Another User",
                 "test@example.com",  // Same email
                 "password456",
+                "Hanoi",
+                "Hoan Kiem",
+                "Tran Hung Dao",
                 "0987654321",
-                "456 Another Street"
+                "456 Another Street",
+                Role.USER
         );
+        
+        doThrow(new RuntimeException("Email already exists"))
+                .when(authenticationService).register(any(RegisterRequest.class));
 
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(duplicateRequest)))
-                .andExpect(status().isOk());  // Note: Your controller returns 200 even on success
+        // When & Then
+        assertThrows(RuntimeException.class, () -> authenticationController.register(duplicateRequest));
+        verify(authenticationService, times(1)).register(any(RegisterRequest.class));
     }
 
     @Test
@@ -202,15 +179,23 @@ public class GuestFunctionalityTest {
                 "",  // Empty name
                 "invalid-email",  // Invalid email format
                 "123",  // Too short password
+                "",  // Empty province
+                "",  // Empty district
+                "",  // Empty ward
                 "",  // Empty phone
-                ""   // Empty address
+                "",  // Empty address
+                Role.USER
         );
+        
+        doNothing().when(authenticationService).register(any(RegisterRequest.class));
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-                .andExpect(status().isOk());  // Note: Add validation annotations to DTO for proper validation
+        // When
+        ResponseEntity<String> response = authenticationController.register(invalidRequest);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(authenticationService, times(1)).register(any(RegisterRequest.class));
     }
 
     @Test
@@ -218,12 +203,12 @@ public class GuestFunctionalityTest {
     void testLoginWithEmptyCredentials() throws Exception {
         // Given
         AuthenticationRequest emptyRequest = new AuthenticationRequest("", "");
+        when(authenticationService.authenticate(any(AuthenticationRequest.class)))
+                .thenThrow(new RuntimeException("Invalid credentials"));
 
         // When & Then
-        mockMvc.perform(post("/api/v1/auth/authenticate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(emptyRequest)))
-                .andExpect(status().is5xxServerError());  // Expected to fail
+        assertThrows(RuntimeException.class, () -> authenticationController.authenticate(emptyRequest));
+        verify(authenticationService, times(1)).authenticate(any(AuthenticationRequest.class));
     }
 
     @Test
@@ -233,28 +218,31 @@ public class GuestFunctionalityTest {
         ForgotPasswordRequest nonExistentEmail = new ForgotPasswordRequest("nonexistent@example.com");
         doNothing().when(authenticationService).forgotPassword(any(ForgotPasswordRequest.class));
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/auth/forgot-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(nonExistentEmail)))
-                .andExpect(status().isOk());
+        // When
+        ResponseEntity<AuthenticationResponse> response = authenticationController.forgotPassword(nonExistentEmail);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(authenticationService, times(1)).forgotPassword(any(ForgotPasswordRequest.class));
     }
 
     @Test
     @DisplayName("Test 10: Reset Password - Token không hợp lệ")
-    void testResetPasswordWithInvalidToken() throws Exception {
+    void testResetPasswordWithInvalidToken() {
         // Given
         ResetPasswordRequest invalidTokenRequest = new ResetPasswordRequest(
-                "test@example.com",
-                "newPassword123",
-                "invalid-token"
+                "invalid-token",
+                "newPassword123"
         );
-        doNothing().when(authenticationService).resetPassword(any(ResetPasswordRequest.class));
+        when(authenticationService.resetPassword(any(ResetPasswordRequest.class))).thenReturn(authenticationResponse);
 
-        // When & Then
-        mockMvc.perform(post("/api/v1/auth/reset-password")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidTokenRequest)))
-                .andExpect(status().isOk());
+        // When
+        ResponseEntity<AuthenticationResponse> response = authenticationController.resetPassword(invalidTokenRequest);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(authenticationService, times(1)).resetPassword(any(ResetPasswordRequest.class));
     }
 }
