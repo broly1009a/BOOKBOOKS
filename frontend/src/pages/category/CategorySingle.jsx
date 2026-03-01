@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react'
 import Sidebar from "../../components/sidebar/Sidebar";
+import SidebarManager from "../../components/sidebar/SidebarManager";
 import Navbar from "../../components/navbar/Navbar";
 import { getCategoryById, updateCategory } from '../../service/CategoryService';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 
 const CategorySingle = () => {
-    const [data, setData] = useState([])
+    const [data, setData] = useState({})
     const { id } = useParams()
+    const location = useLocation()
+    const isManager = location.pathname.startsWith('/manager')
+    const basePath = isManager ? '/manager/categories' : '/categories'
     const [error, setError] = useState(false)
 
     const handleCancel = () => {
-        window.location.replace("/categories")
+        window.location.replace(basePath)
     }
 
     const handleSave = () => {
@@ -22,7 +26,7 @@ const CategorySingle = () => {
         }
         updateCategory(data).then(res => {
             if (res.status === 200) {
-                window.location.replace("/categories")
+                window.location.replace(basePath)
             }
             else {
                 setError(true)
@@ -39,7 +43,7 @@ const CategorySingle = () => {
     return (
         <div>
             <div className="single">
-                <Sidebar />
+                {isManager ? <SidebarManager /> : <Sidebar />}
                 {data.length !== 0 && <div className="singleContainer">
                     <Navbar />
                     <div className="wrapper">

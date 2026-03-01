@@ -9,7 +9,7 @@ const List = ({type}) => {
       <Sidebar/>
       <div className="listContainer">
         <Navbar/>
-        <Datatable type={type}/>
+        <Datatable type={type} role="ADMIN" />
       </div>
     </div>
   )

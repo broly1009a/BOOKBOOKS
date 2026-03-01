@@ -18,12 +18,14 @@ import { getAllCollections } from "../../service/CollectionService"
 import { useNavigate } from "react-router-dom";
 import { getAllAuthors } from "../../service/AuthorService";
 import { getAllLanguages } from "../../service/LanguageService";
+import { getCategories } from "../../services/CategoryService";
 
 const ManagerProductNew = () => {
     const [publishers, setPublishers] = useState([])
     const [collections, setCollections] = useState([])
     const [authors, setAuthors] = useState([])
     const [languages, setLanguages] = useState([])
+    const [categories, setCategories] = useState([])
     const [error, setError] = useState(false)
     const [data, setData] = useState({
         title: '',
@@ -42,13 +44,17 @@ const ManagerProductNew = () => {
         language: {
             id: ''
         },
+        category: {
+            id: ''
+        },
         page: 0,
         weight: 0,
         size: '',
         cover: '',
         price: 0,
         discount: 0,
-        sold: 0
+        sold: 0,
+        state: 'HIDDEN'
     })
 
     const navigate = useNavigate()
@@ -77,6 +83,12 @@ const ManagerProductNew = () => {
         }).catch(err => {
             console.log(err)
         })
+
+        getCategories().then(res => {
+            setCategories(res.data)
+        }).catch(err => {
+            console.log(err)
+        })
     }, [])
 
     const handleInputChange = (e) => {
@@ -91,6 +103,8 @@ const ManagerProductNew = () => {
             setData({ ...data, publisher: { id: value } });
         } else if (name === 'language') {
             setData({ ...data, language: { id: value } });
+        } else if (name === 'category') {
+            setData({ ...data, category: { id: value } });
         }
     }
 
@@ -123,17 +137,37 @@ const ManagerProductNew = () => {
     }
 
     const handleAdd = () => {
-        const bookData = {
-            ...data,
-            salePrice: data.price - (data.price * data.discount / 100)
-        };
-
-        addBook(bookData).then(res => {
-            navigate('/manager/products')
-        }).catch(err => {
+        try {
+            if (data.title.trim() === '' || data.publisher.id === '' || data.authors.length === 0 || data.collections.length === 0 || data.isbn.trim() === '' || data.images[0].link.trim() === '' || data.language.id === '' || data.category.id === '' || data.page === 0 || data.stock === 0 || data.weight === 0 || data.size.trim() === '' || data.cover.trim() === '' || data.price === 0) {
+                setError(true)
+                return
+            }
+            if( parseInt(data.price) < 0 || parseInt(data.page) < 0 || parseInt(data.stock) < 0 || parseInt(data.weight) < 0 || parseFloat(data.discount) < 0){
+                setError(true)
+                return
+            }
+            
+            const bookData = {
+                ...data,
+                price: parseInt(data.price),
+                page: parseInt(data.page),
+                stock: parseInt(data.stock),
+                weight: parseInt(data.weight),
+                discount: parseFloat(data.discount),
+                salePrice: parseInt(data.price) - (parseInt(data.price) * parseFloat(data.discount) / 100)
+            }
+            
+            addBook(bookData).then(res => {
+                navigate('/manager/products')
+            }).catch(err => {
+                setError(true)
+                console.log(err)
+            })
+        }
+        catch (err) {
             setError(true)
-            console.log(err)
-        })
+            return
+        }
     }
 
     const handleCancel = () => {
@@ -229,6 +263,26 @@ const ManagerProductNew = () => {
                                     <option value="">Select Language</option>
                                     {languages.map(l => (
                                         <option key={l.id} value={l.id}>{l.name}</option>
+                                    ))}
+                                </NativeSelect>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <FormControl fullWidth>
+                                <InputLabel variant="standard" htmlFor="category">
+                                    Category
+                                </InputLabel>
+                                <NativeSelect
+                                    value={data.category.id}
+                                    onChange={handleObjectChange}
+                                    inputProps={{
+                                        name: 'category',
+                                        id: 'category',
+                                    }}
+                                >
+                                    <option value="">Select Category</option>
+                                    {categories.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
                                     ))}
                                 </NativeSelect>
                             </FormControl>
@@ -374,6 +428,24 @@ const ManagerProductNew = () => {
                                 value={data.images[0]?.link || ''}
                                 onChange={handleImageChange}
                             />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <FormControl fullWidth>
+                                <InputLabel variant="standard" htmlFor="state">
+                                    State
+                                </InputLabel>
+                                <NativeSelect
+                                    value={data?.state || 'HIDDEN'}
+                                    onChange={handleInputChange}
+                                    inputProps={{
+                                        name: 'state',
+                                        id: 'state',
+                                    }}
+                                >
+                                    <option value="HIDDEN">HIDDEN</option>
+                                    <option value="ACTIVE">ACTIVE</option>
+                                </NativeSelect>
+                            </FormControl>
                         </Grid>
                     </Grid>
                 </div>

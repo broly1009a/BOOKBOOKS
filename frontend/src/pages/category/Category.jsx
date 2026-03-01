@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react"
 import "./category.scss"
 import Sidebar from "../../components/sidebar/Sidebar"
+import SidebarManager from "../../components/sidebar/SidebarManager"
 import Navbar from "../../components/navbar/Navbar"
 import { DataGrid } from "@mui/x-data-grid";
 import { categoryColumns } from "../../datatablesource";
 import { getAllCategories, deleteCategory } from "../../service/CategoryService";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
-const Category = () => {
+const Category = ({ role = 'ADMIN' }) => {
     const [data, setData] = useState([])
     const [columns, setColumns] = useState([]);
     const navigate = useNavigate()
+    const location = useLocation()
+    const isManager = location.pathname.startsWith('/manager')
+    const basePath = isManager ? '/manager/categories' : '/categories'
 
     const handleDelete = (id) => {
         const confirmBox = window.confirm(
@@ -30,7 +34,7 @@ const Category = () => {
             renderCell: (params) => {
                 return (
                     <div className="cellAction">
-                        <Link to={`/categories/${params.row.id}`} style={{ textDecoration: "none" }}>
+                        <Link to={`${basePath}/${params.row.id}`} style={{ textDecoration: "none" }}>
                             <div className="viewButton">Update</div>
                         </Link>
                         <div
@@ -54,13 +58,13 @@ const Category = () => {
 
     return (
         <div className="list">
-            <Sidebar />
+            {isManager ? <SidebarManager /> : <Sidebar />}
             <div className="listContainer">
                 <Navbar />
                 <div className="datatable">
                     <div className="datatableTitle">
                         Manage Categories
-                        <Link to={`/categories/new`} className="link">
+                        <Link to={`${basePath}/new`} className="link">
                             Add New Category
                         </Link>
                     </div>

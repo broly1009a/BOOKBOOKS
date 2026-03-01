@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react"
 import "./publisher.scss"
 import Sidebar from "../../components/sidebar/Sidebar"
+import SidebarManager from "../../components/sidebar/SidebarManager"
 import Navbar from "../../components/navbar/Navbar"
 import { DataGrid } from "@mui/x-data-grid";
 import { publisherColumns } from "../../datatablesource";
 import { getAllPublishers, deletePublisher } from "../../service/PublisherService";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Publisher = () => {
     const [data, setData] = useState([])
     const [columns, setColumns] = useState([]);
     const navigate = useNavigate()
+    const location = useLocation()
+    const isManager = location.pathname.startsWith('/manager')
+    const basePath = isManager ? '/manager/publishers' : '/publishers'
 
     const handleDelete = (id) => {
         const confirmBox = window.confirm(
@@ -30,7 +34,7 @@ const Publisher = () => {
             renderCell: (params) => {
                 return (
                     <div className="cellAction">
-                        <Link to={`/publishers/${params.row.id}`} style={{ textDecoration: "none" }}>
+                        <Link to={`${basePath}/${params.row.id}`} style={{ textDecoration: "none" }}>
                             <div className="viewButton">Update</div>
                         </Link>
                         <div
@@ -54,13 +58,13 @@ const Publisher = () => {
 
     return (
         <div className="list">
-            <Sidebar />
+            {isManager ? <SidebarManager /> : <Sidebar />}
             <div className="listContainer">
                 <Navbar />
                 <div className="datatable">
                     <div className="datatableTitle">
                         Manage Publishers
-                        <Link to={`/publishers/new`} className="link">
+                        <Link to={`${basePath}/new`} className="link">
                             Add New Publisher
                         </Link>
                     </div>

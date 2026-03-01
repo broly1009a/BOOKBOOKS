@@ -8,7 +8,7 @@ import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 
 const PostSingle = () => {
-    const [data, setData] = useState([])
+    const [data, setData] = useState({})
     const { id } = useParams()
     const [error, setError] = useState(false)
     const [categories, setCategories] = useState([])

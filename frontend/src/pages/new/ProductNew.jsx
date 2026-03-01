@@ -19,12 +19,14 @@ import { useNavigate } from "react-router-dom";
 import { getAllAuthors } from "../../service/AuthorService";
 // import Ckeditor from "../ckeditor/Ckeditor";
 import { getAllLanguages } from "../../service/LanguageService";
+import { getCategories } from "../../services/CategoryService";
 
 const ProductNew = ({ }) => {
     const [publishers, setPublishers] = useState([])
     const [collections, setCollections] = useState([])
     const [authors, setAuthors] = useState([])
     const [languages, setLanguages] = useState([])
+    const [categories, setCategories] = useState([])
     const [error, setError] = useState(false)
     const [data, setData] = useState({
         title: '',
@@ -43,13 +45,17 @@ const ProductNew = ({ }) => {
         language: {
             id: ''
         },
+        category: {
+            id: ''
+        },
         page: 0,
         weight: 0,
         size: '',
         cover: '',
         price: 0,
         discount: 0,
-        sold: 0
+        sold: 0,
+        state: 'HIDDEN'
     })
 
     const navigate = useNavigate()
@@ -78,6 +84,13 @@ const ProductNew = ({ }) => {
 
         getAllLanguages().then(res => {
             setLanguages(res.data)
+        }
+        ).catch(err => {
+            console.log(err)
+        })
+
+        getCategories().then(res => {
+            setCategories(res.data)
         }
         ).catch(err => {
             console.log(err)
@@ -130,7 +143,7 @@ const ProductNew = ({ }) => {
 
     const handleSave = () => {
         try {
-            if (data.title.trim() === '' || data.publisher.id === '' || data.authors.length === 0 || data.collections.length === 0 || data.isbn.trim() === '' || data.images[0].link.trim() === '' || data.language.id === '' || data.page === 0 || data.stock === 0 || data.weight === 0 || data.size.trim() === '' || data.cover.trim() === '' || data.price === 0) {
+            if (data.title.trim() === '' || data.publisher.id === '' || data.authors.length === 0 || data.collections.length === 0 || data.isbn.trim() === '' || data.images[0].link.trim() === '' || data.language.id === '' || data.category.id === '' || data.page === 0 || data.stock === 0 || data.weight === 0 || data.size.trim() === '' || data.cover.trim() === '' || data.price === 0) {
                 setError(true)
                 return
             }
@@ -138,24 +151,27 @@ const ProductNew = ({ }) => {
                 setError(true)
                 return
             }
-            setData({
-                ...data, price: parseInt(data.price),
+            
+            const bookData = {
+                ...data,
+                price: parseInt(data.price),
                 page: parseInt(data.page),
                 stock: parseInt(data.stock),
                 weight: parseInt(data.weight),
                 discount: parseFloat(data.discount)
+            }
+            
+            addBook(bookData).then(res => {
+                navigate("/products")
+            }).catch(err => {
+                console.log(err)
+                setError(true)
             })
         }
         catch (err) {
             setError(true)
             return
         }
-        addBook(data).then(res => {
-            navigate("/products")
-        }
-        ).catch(err => {
-            console.log(err)
-        })
     }
 
 
@@ -164,7 +180,7 @@ const ProductNew = ({ }) => {
     return (
         <div className="single">
             <Sidebar />
-            {data.length !== 0 && <div className="singleContainer">
+            <div className="singleContainer">
                 <Navbar />
                 <div className="wrapper">
                     <div className="function spacing">
@@ -308,6 +324,25 @@ const ProductNew = ({ }) => {
                         </Grid>
 
                         <Grid item xs={4}>
+                            <Box sx={{ maxWidth: 250 }} className='spacing'>
+                                <FormControl fullWidth>
+                                    <NativeSelect
+                                        value={data.category.name}
+                                        onChange={handleObjectChange}
+                                        name="category"
+                                    >
+                                        <option value="">--Select category--</option>
+                                        {
+                                            categories.map(category => (
+                                                <option key={category.id} value={category.id}>{category.name}</option>
+                                            ))
+                                        }
+                                    </NativeSelect>
+                                </FormControl>
+                            </Box>
+                        </Grid>
+
+                        <Grid item xs={4}>
                             <TextField
                                 id="standard-number"
                                 label="Page"
@@ -440,11 +475,32 @@ const ProductNew = ({ }) => {
                         </Grid>
 
                         <Grid item xs={4}>
+                            <Box sx={{ maxWidth: 250 }} className='spacing'>
+                                <FormControl fullWidth>
+                                    <InputLabel variant="standard" htmlFor="state-select">
+                                        State
+                                    </InputLabel>
+                                    <NativeSelect
+                                        value={data?.state || 'HIDDEN'}
+                                        onChange={handleInputChange}
+                                        name="state"
+                                        inputProps={{
+                                            id: 'state-select',
+                                        }}
+                                    >
+                                        <option value="HIDDEN">HIDDEN</option>
+                                        <option value="ACTIVE">ACTIVE</option>
+                                    </NativeSelect>
+                                </FormControl>
+                            </Box>
+                        </Grid>
+
+                        <Grid item xs={4}>
                             <img src={data?.images[0]?.link} alt="image" style={{width: '200px'}}/>
                         </Grid>
                     </Grid>
                 </div>
-            </div>}
+            </div>
         </div>
     );
 };

@@ -9,7 +9,10 @@ import { Link, useLocation } from "react-router-dom";
 import { DarkModeContext } from "../../context/darkModeContext";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
-
+import QueueIcon from '@mui/icons-material/Queue';
+import AssuredWorkloadIcon from '@mui/icons-material/AssuredWorkload';
+import CategoryIcon from '@mui/icons-material/Category';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 const SidebarManager = () => {
   const { dispatch } = useContext(DarkModeContext);
   const authContext = useContext(AuthContext);
@@ -46,13 +49,36 @@ const SidebarManager = () => {
           </Link>
           
           <p className="title">MANAGEMENT</p>
+           <Link to="/manager/authors" style={{ textDecoration: "none" }}>
+            <li className={isActive("/manager/authors") ? "active" : ""}>
+              <PersonOutlineIcon className="icon" />
+              <span>Authors</span>
+            </li>
+          </Link>
           <Link to="/manager/products" style={{ textDecoration: "none" }}>
             <li className={isActive("/manager/products") ? "active" : ""}>
               <StoreIcon className="icon" />
               <span>Products</span>
             </li>
           </Link>
-          
+          <Link to="/manager/collections" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/manager/collections") ? "active" : ""}>
+              <QueueIcon className="icon" />
+              <span>Collections</span>
+            </li>
+          </Link>
+          <Link to="/manager/publishers" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/manager/publishers") ? "active" : ""}>
+              <AssuredWorkloadIcon className="icon" />
+              <span>Publishers</span>
+            </li>
+          </Link>
+          <Link to="/manager/categories" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/manager/categories") ? "active" : ""}>
+              <CategoryIcon className="icon" />
+              <span>Categories</span>
+            </li>
+          </Link>
           <p className="title">FEEDBACK</p>
           <Link to="/manager/feedbacks" style={{ textDecoration: 'none' }}>
             <li className={isActive("/manager/feedbacks") ? "active" : ""}>

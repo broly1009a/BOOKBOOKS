@@ -8,7 +8,7 @@ import TextField from '@mui/material/TextField';
 import Form from 'react-bootstrap/Form';
 
 const ManagerFeedbackSingle = () => {
-    const [data, setData] = useState([])
+    const [data, setData] = useState({})
     const { id } = useParams()
     const [error, setError] = useState(false)
     const navigate = useNavigate()

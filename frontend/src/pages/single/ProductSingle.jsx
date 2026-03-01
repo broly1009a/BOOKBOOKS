@@ -15,20 +15,24 @@ import { useEffect, useState } from "react";
 import { getBookById } from "../../service/BookService";
 import { getAllPublishers } from "../../service/PublisherService";
 import { getAllCollections } from "../../service/CollectionService"
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { getAllAuthors } from "../../service/AuthorService";
 import { getAllLanguages } from "../../service/LanguageService";
 import { updateBook } from "../../service/BookService";
+import { getCategories } from "../../services/CategoryService";
 
 const ProductSingle = () => {
-    const [data, setData] = useState([])
+    const [data, setData] = useState({})
     const [publishers, setPublishers] = useState([])
     const [collections, setCollections] = useState([])
     const [authors, setAuthors] = useState([])
     const [languages, setLanguages] = useState([])
+    const [categories, setCategories] = useState([])
     const { productId } = useParams()
     const [error, setError] = useState(false)
     const navigate = useNavigate()
+    const location = useLocation()
+    const isAdminRoute = location.pathname.startsWith('/admin/')
 
     useEffect(() => {
         getBookById(productId).then(res => {
@@ -59,6 +63,13 @@ const ProductSingle = () => {
 
         getAllLanguages().then(res => {
             setLanguages(res.data)
+        }
+        ).catch(err => {
+            console.log(err)
+        })
+
+        getCategories().then(res => {
+            setCategories(res.data)
         }
         ).catch(err => {
             console.log(err)
@@ -105,7 +116,7 @@ const ProductSingle = () => {
     }
 
     const handleCancel = () => {
-        navigate("/products")
+        navigate(isAdminRoute ? "/admin/products" : "/products")
     }
 
     const handleSave = () => {
@@ -120,23 +131,26 @@ const ProductSingle = () => {
                 return
             }
 
-            setData({
-                ...data, price: parseInt(data.price),
+            const bookData = {
+                ...data,
+                price: parseInt(data.price),
                 page: parseInt(data.page),
                 stock: parseInt(data.stock),
                 weight: parseInt(data.weight),
                 discount: parseFloat(data.discount)
+            };
+
+            updateBook(productId, bookData).then(res => {
+                navigate(isAdminRoute ? "/admin/products" : "/products")
+            }).catch(err => {
+                setError(true)
+                console.log(err)
             })
         }
         catch (err) {
             setError(true)
             return
         }
-        updateBook(data).then(res => {
-            navigate("/products")
-        }).catch(err => {
-            console.log(err)
-        })
     }
 
 
@@ -144,7 +158,7 @@ const ProductSingle = () => {
     return (
         <div className="single">
             <Sidebar />
-            {data.length !== 0 && <div className="singleContainer">
+            <div className="singleContainer">
                 <Navbar />
                 <div className="wrapper">
                     <div className="function spacing">
@@ -275,7 +289,7 @@ const ProductSingle = () => {
                             <Box sx={{ maxWidth: 250 }} className='spacing'>
                                 <FormControl fullWidth>
                                     <InputLabel variant="standard" htmlFor="uncontrolled-native">
-                                        Publisher
+                                        Language
                                     </InputLabel>
                                     <NativeSelect
                                         value={data.language.name}
@@ -285,6 +299,28 @@ const ProductSingle = () => {
                                         {
                                             languages.map(language => (
                                                 <option key={language.id} value={language.name}>{language.name}</option>
+                                            ))
+                                        }
+                                    </NativeSelect>
+                                </FormControl>
+                            </Box>
+                        </Grid>
+
+                        <Grid item xs={4}>
+                            <Box sx={{ maxWidth: 250 }} className='spacing'>
+                                <FormControl fullWidth>
+                                    <InputLabel variant="standard" htmlFor="category-select">
+                                        Category
+                                    </InputLabel>
+                                    <NativeSelect
+                                        value={data?.category?.name || ''}
+                                        onChange={handleObjectChange}
+                                        name="category"
+                                    >
+                                        <option value="">--Select category--</option>
+                                        {
+                                            categories.map(category => (
+                                                <option key={category.id} value={category.name}>{category.name}</option>
                                             ))
                                         }
                                     </NativeSelect>
@@ -425,12 +461,33 @@ const ProductSingle = () => {
                         </Grid>
 
                         <Grid item xs={4}>
+                            <Box sx={{ maxWidth: 250 }} className='spacing'>
+                                <FormControl fullWidth>
+                                    <InputLabel variant="standard" htmlFor="state-select">
+                                        State
+                                    </InputLabel>
+                                    <NativeSelect
+                                        value={data?.state || 'HIDDEN'}
+                                        onChange={handleInputChange}
+                                        name="state"
+                                        inputProps={{
+                                            id: 'state-select',
+                                        }}
+                                    >
+                                        <option value="HIDDEN">HIDDEN</option>
+                                        <option value="ACTIVE">ACTIVE</option>
+                                    </NativeSelect>
+                                </FormControl>
+                            </Box>
+                        </Grid>
+
+                        <Grid item xs={4}>
                             <img src={data?.images[0]?.link} alt="" style={{ width: '200px' }} />
                         </Grid>
 
                     </Grid>
                 </div>
-            </div>}
+            </div>
         </div>
     );
 };

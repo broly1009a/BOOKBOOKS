@@ -38,6 +38,10 @@ const Sidebar = () => {
   }
 
   const isActive = (path) => {
+    // For admin routes, check both /admin/... and legacy routes
+    if (path.startsWith('/admin/')) {
+      return location.pathname === path || location.pathname.startsWith(path + '/');
+    }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   }
 
@@ -61,86 +65,86 @@ const Sidebar = () => {
           </Link>
           
           <p className="title">MANAGEMENT</p>
-          <Link to="/authors" style={{ textDecoration: "none" }}>
-            <li className={isActive("/authors") ? "active" : ""}>
+          <Link to="/admin/authors" style={{ textDecoration: "none" }}>
+            <li className={isActive("/admin/authors") ? "active" : ""}>
               <PersonOutlineIcon className="icon" />
               <span>Authors</span>
             </li>
           </Link>
-          <Link to="/products" style={{ textDecoration: "none" }}>
-            <li className={isActive("/products") ? "active" : ""}>
+          <Link to="/admin/products" style={{ textDecoration: "none" }}>
+            <li className={isActive("/admin/products") ? "active" : ""}>
               <StoreIcon className="icon" />
               <span>Products</span>
             </li>
           </Link>
-          <Link to="/orders" style={{ textDecoration: "none" }}>
-            <li className={isActive("/orders") ? "active" : ""}>
+          <Link to="/admin/orders" style={{ textDecoration: "none" }}>
+            <li className={isActive("/admin/orders") ? "active" : ""}>
               <CreditCardIcon className="icon" />
               <span>Orders</span>
             </li>
           </Link>
-          <Link to="/collections" style={{ textDecoration: 'none' }}>
-            <li className={isActive("/collections") ? "active" : ""}>
+          <Link to="/admin/collections" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/admin/collections") ? "active" : ""}>
               <QueueIcon className="icon" />
               <span>Collections</span>
             </li>
           </Link>
-          <Link to="/publishers" style={{ textDecoration: 'none' }}>
-            <li className={isActive("/publishers") ? "active" : ""}>
+          <Link to="/admin/publishers" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/admin/publishers") ? "active" : ""}>
               <AssuredWorkloadIcon className="icon" />
               <span>Publishers</span>
             </li>
           </Link>
-          <Link to="/categories" style={{ textDecoration: 'none' }}>
-            <li className={isActive("/categories") ? "active" : ""}>
+          <Link to="/admin/categories" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/admin/categories") ? "active" : ""}>
               <CategoryIcon className="icon" />
               <span>Categories</span>
             </li>
           </Link>
           
           <p className="title">CONTENT</p>
-          <Link to="/sliders" style={{ textDecoration: 'none' }}>
-            <li className={isActive("/sliders") ? "active" : ""}>
+          <Link to="/admin/sliders" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/admin/sliders") ? "active" : ""}>
               <SlideshowIcon className="icon" />
               <span>Sliders</span>
             </li>
           </Link>
-          <Link to='/posts' style={{ textDecoration: 'none' }}>
-            <li className={isActive("/posts") ? "active" : ""}>
+          <Link to='/admin/posts' style={{ textDecoration: 'none' }}>
+            <li className={isActive("/admin/posts") ? "active" : ""}>
               <ArticleIcon className="icon" />
               <span>Posts</span>
             </li>
           </Link>
-           <Link to='/post-categories' style={{ textDecoration: 'none' }}>
-            <li className={isActive("/post-categories") ? "active" : ""}>
+           <Link to='/admin/post-categories' style={{ textDecoration: 'none' }}>
+            <li className={isActive("/admin/post-categories") ? "active" : ""}>
               <PsychologyOutlinedIcon className="icon" />
               <span>Post Categories</span>
             </li>
           </Link>
-          <Link to="/feedbacks" style={{ textDecoration: 'none' }}>
-            <li className={isActive("/feedbacks") ? "active" : ""}>
+          <Link to="/admin/feedbacks" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/admin/feedbacks") ? "active" : ""}>
               <ChatIcon className="icon" />
               <span>Feedbacks</span>
             </li>
           </Link>
 
           <p className="title">USERS</p>
-          <Link to="/customers" style={{ textDecoration: 'none' }}>
-            <li className={isActive("/customers") ? "active" : ""}>
+          <Link to="/admin/customers" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/admin/customers") ? "active" : ""}>
               <GroupIcon className="icon" />
               <span>Customers</span>
             </li>
           </Link>
-          <Link to="/staff" style={{ textDecoration: 'none' }}>
-            <li className={isActive("/staff") ? "active" : ""}>
+          <Link to="/admin/staff" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/admin/staff") ? "active" : ""}>
               <BadgeIcon className="icon" />
               <span>Staff</span>
             </li>
           </Link>
 
           <p className="title">ACCOUNT</p>
-          <Link to="/changePass" style={{ textDecoration: 'none' }}>
-            <li className={isActive("/changePass") ? "active" : ""}>
+          <Link to="/admin/changePass" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/admin/changePass") ? "active" : ""}>
               <AccountCircleOutlinedIcon className="icon" />
               <span>Change Password</span>
             </li>

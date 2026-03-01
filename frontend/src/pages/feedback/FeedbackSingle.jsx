@@ -1,25 +1,29 @@
 import React, { useState, useEffect } from 'react'
 import Sidebar from "../../components/sidebar/Sidebar";
+import SidebarManager from "../../components/sidebar/SidebarManager";
 import Navbar from "../../components/navbar/Navbar";
 import { getFeedbackById, answerFeedback } from '../../service/FeedbackService';
 import { FormControl, InputLabel, NativeSelect } from '@mui/material';
 import Form from 'react-bootstrap/Form';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 // import Textarea from '@mui/joy/Textarea';
 const FeedbackSingle = () => {
-    const [data, setData] = useState([])
+    const [data, setData] = useState({})
     const { id } = useParams()
+    const location = useLocation()
+    const isManager = location.pathname.startsWith('/manager')
+    const basePath = isManager ? '/manager/feedbacks' : '/feedbacks'
     const [error, setError] = useState(false)
 
     const handleCancel = () => {
-        window.location.replace("/feedbacks")
+        window.location.replace(basePath)
     }
 
     const handleSave = () => {
         answerFeedback(data).then((res) => {
-            window.location.replace("/feedbacks")
+            window.location.replace(basePath)
         })
     }
 
@@ -32,7 +36,7 @@ const FeedbackSingle = () => {
     return (
         <div>
             <div className="single">
-                <Sidebar />
+                {isManager ? <SidebarManager /> : <Sidebar />}
                 {data.length !== 0 && <div className="singleContainer">
                     <Navbar />
                     <div className="wrapper">

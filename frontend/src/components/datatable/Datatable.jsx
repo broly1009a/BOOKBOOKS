@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { getAllBooks, deleteBook } from "../../service/BookService";
 import { getAllAuthors, deleteAuthor } from "../../service/AuthorService";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-const Datatable = ({ type }) => {
+const Datatable = ({ type, role }) => {
   const [data, setData] = useState([]);
   const [columns, setColumns] = useState([]);
   const [search, setSearch] = useState("");
@@ -79,9 +79,11 @@ const Datatable = ({ type }) => {
       headerName: "Action",
       width: 200,
       renderCell: (params) => {
+        const basePath = role === "ADMIN" ? "/admin" : role === "MANAGER" ? "/manager" : "";
+        const updatePath = `${basePath}/${type}/${params.row.id}`;
         return (
           <div className="cellAction">
-            <Link to={`/${type}/${params.row.id}`} style={{ textDecoration: "none" }}>
+            <Link to={updatePath} style={{ textDecoration: "none" }}>
               <div className="viewButton">Update</div>
             </Link>
             <div
@@ -130,7 +132,7 @@ const Datatable = ({ type }) => {
       </div>
       <div className="datatableTitle">
         Manage {type}
-        <Link to={`/${type}/new`} className="link">
+        <Link to={`${role === "ADMIN" ? "/admin" : role === "MANAGER" ? "/manager" : ""}/${type}/new`} className="link">
           Add New {type}
         </Link>
       </div>

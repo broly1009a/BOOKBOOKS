@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 const CollectionSingle = () => {
-    const [data, setData] = useState([])
+    const [data, setData] = useState({})
     const { id } = useParams()
     const [error, setError] = useState(false)
 

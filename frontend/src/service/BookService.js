@@ -10,8 +10,12 @@ const getBookById = (bookId) => {
     return axios.get(BOOK_BASE_URL + '/' + bookId);
 }
 
-const updateBook = (data) => {
-    return axios.put(BOOK_BASE_URL, data);
+const updateBook = (productId, data) => {
+    return axios.put(BOOK_BASE_URL + '/' + productId, data, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
 }
 
 const addBook = (data) => {

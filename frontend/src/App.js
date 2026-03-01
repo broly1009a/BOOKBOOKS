@@ -176,6 +176,78 @@ function App() {
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<RoleBasedRoute allowedRoles={['ADMIN']}><Home /></RoleBasedRoute>} />
           
+          <Route path="/admin/authors">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><List type={'authors'} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><AuthorSingle /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><New inputs={authorInputs} title="Add New Author" handleAdd={addAuthor} location={'/admin/authors'} /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/products">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><List type={'products'} /></RoleBasedRoute>} />
+            <Route path=":productId" element={<RoleBasedRoute allowedRoles={['ADMIN']}><ManagerProductSingle /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><ProductNew title="Add New Product" /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/collections">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Collection /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><New inputs={collectionInputs} title="Add New Collection" location={'/admin/collections'} handleAdd={addCollection} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><CollectionSingle /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/publishers">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Publisher /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><New inputs={publisherInputs} title="Add New Publisher" location={'/admin/publishers'} handleAdd={addPublisher} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><PublisherSingle /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/categories">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Category /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><New inputs={categoryInputs} title="Add New Category" location={'/admin/categories'} handleAdd={addCategory} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><CategorySingle /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/orders">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Order /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><OrderDetail /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/posts">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Post /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><PostSingle /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><PostNew currentUser={currentUser} /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/post-categories" element={<RoleBasedRoute allowedRoles={['ADMIN']}><PostCategoryManager /></RoleBasedRoute>} />
+          
+          <Route path="/admin/sliders">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Slider /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><New inputs={sliderInputs} title="Add New Slider" location={'/admin/sliders'} handleAdd={addSlider} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><SliderSingle /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/feedbacks">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Feedback /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><FeedbackSingle /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/customers">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Customer /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/staff">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Staff /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><AddStaff /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/changePass">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><AdminChangePassword /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/admin/order-state">
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><ChangeState /></RoleBasedRoute>} />
+          </Route>
+
+          {/* Legacy routes for backward compatibility */}
           <Route path="/authors">
             <Route index element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><List type={'authors'} /></RoleBasedRoute>} />
             <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><AuthorSingle /></RoleBasedRoute>} />
@@ -214,15 +286,15 @@ function App() {
           </Route>
           
           <Route path="/publishers">
-            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Publisher /></RoleBasedRoute>} />
-            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><New inputs={publisherInputs} title="Add New Publisher" location={'/publishers'} handleAdd={addPublisher} /></RoleBasedRoute>} />
-            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><PublisherSingle /></RoleBasedRoute>} />
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><Publisher /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><New inputs={publisherInputs} title="Add New Publisher" location={'/publishers'} handleAdd={addPublisher} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><PublisherSingle /></RoleBasedRoute>} />
           </Route>
           
           <Route path="/categories">
-            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Category /></RoleBasedRoute>} />
-            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><New inputs={categoryInputs} title="Add New Category" location={'/categories'} handleAdd={addCategory} /></RoleBasedRoute>} />
-            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><CategorySingle /></RoleBasedRoute>} />
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><Category /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><New inputs={categoryInputs} title="Add New Category" location={'/categories'} handleAdd={addCategory} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><CategorySingle /></RoleBasedRoute>} />
           </Route>
           
           <Route path="/posts">
@@ -249,12 +321,34 @@ function App() {
 
           {/* Manager Routes */}
           <Route path="/manager" element={<RoleBasedRoute allowedRoles={['MANAGER']}><ManagerHome /></RoleBasedRoute>} />
+          <Route path="/manager/authors">
+            <Route index element={<RoleBasedRoute allowedRoles={['MANAGER']}><ManagerList type={'authors'} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['MANAGER']}><AuthorSingle /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['MANAGER']}><New inputs={authorInputs} title="Add New Author" handleAdd={addAuthor} location={'/manager/authors'} /></RoleBasedRoute>} />
+          </Route>
           <Route path="/manager/products">
-            <Route index element={<RoleBasedRoute allowedRoles={['MANAGER']}><ManagerList type={'products'} /></RoleBasedRoute>} /><Route path=":productId" element={<RoleBasedRoute allowedRoles={['MANAGER']}><ManagerProductSingle /></RoleBasedRoute>} />
+            <Route index element={<RoleBasedRoute allowedRoles={['MANAGER']}><ManagerList type={'products'} /></RoleBasedRoute>} />
+            <Route path=":productId" element={<RoleBasedRoute allowedRoles={['MANAGER']}><ManagerProductSingle /></RoleBasedRoute>} />
             <Route path="new" element={<RoleBasedRoute allowedRoles={['MANAGER']}><ManagerProductNew title="Add New Product" /></RoleBasedRoute>} />
           </Route>
+          <Route path="/manager/collections">
+            <Route index element={<RoleBasedRoute allowedRoles={['MANAGER']}><Collection /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['MANAGER']}><New inputs={collectionInputs} title="Add New Collection" location={'/manager/collections'} handleAdd={addCollection} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['MANAGER']}><CollectionSingle /></RoleBasedRoute>} />
+          </Route>
+          <Route path="/manager/publishers">
+            <Route index element={<RoleBasedRoute allowedRoles={['MANAGER']}><Publisher /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['MANAGER']}><PublisherSingle /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['MANAGER']}><New inputs={publisherInputs} title="Add New Publisher" handleAdd={addPublisher} location={'/manager/publishers'} /></RoleBasedRoute>} />
+          </Route>
+          <Route path="/manager/categories">
+            <Route index element={<RoleBasedRoute allowedRoles={['MANAGER']}><Category /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['MANAGER']}><CategorySingle /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['MANAGER']}><New inputs={categoryInputs} title="Add New Category" handleAdd={addCategory} location={'/manager/categories'} /></RoleBasedRoute>} />
+          </Route>
+
           <Route path="/manager/feedbacks">
-            <Route index element={<RoleBasedRoute allowedRoles={['MANAGER']}><ManagerList type={'feedbacks'} /></RoleBasedRoute>} />
+            <Route index element={<RoleBasedRoute allowedRoles={['MANAGER']}><Feedback /></RoleBasedRoute>} />
             <Route path=":id" element={<RoleBasedRoute allowedRoles={['MANAGER']}><ManagerFeedbackSingle /></RoleBasedRoute>} />
           </Route>
           <Route path="/manager/change-password" element={<RoleBasedRoute allowedRoles={['MANAGER']}><ManagerChangePassword /></RoleBasedRoute>} />

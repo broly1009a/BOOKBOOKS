@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from "react"
 import "./collection.scss"
 import Sidebar from "../../components/sidebar/Sidebar"
+import SidebarManager from "../../components/sidebar/SidebarManager"
 import Navbar from "../../components/navbar/Navbar"
 import { DataGrid } from "@mui/x-data-grid";
 import { collectionColumns } from "../../datatablesource";
 import { getAllCollections, deleteCollection } from "../../service/CollectionService";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Collection = () => {
     const [data, setData] = useState([])
     const [columns, setColumns] = useState([]);
+    const location = useLocation()
+    const isManager = location.pathname.startsWith('/manager')
+    const basePath = isManager ? '/manager/collections' : '/collections'
   
 
     const handleDelete = (id) => {
@@ -30,7 +34,7 @@ const Collection = () => {
             renderCell: (params) => {
                 return (
                     <div className="cellAction">
-                        <Link to={`/collections/${params.row.id}`} style={{ textDecoration: "none" }}>
+                        <Link to={`${basePath}/${params.row.id}`} style={{ textDecoration: "none" }}>
                             <div className="viewButton">Update</div>
                         </Link>
                         <div
@@ -54,13 +58,13 @@ const Collection = () => {
 
     return (
         <div className="list">
-            <Sidebar />
+            {isManager ? <SidebarManager /> : <Sidebar />}
             <div className="listContainer">
                 <Navbar />
                 <div className="datatable">
                     <div className="datatableTitle">
                         Manage Book Collections
-                        <Link to={`/collections/new`} className="link">
+                        <Link to={`${basePath}/new`} className="link">
                             Add New Collection
                         </Link>
                     </div>
