@@ -23,11 +23,20 @@ const getBooksByCollectionId = (id) => {
 }
 
 const getBooksByQuery = (id, page, min, max, category) => {
+    console.log('=== BookService.getBooksByQuery ==>');
+    console.log('Parameters:', { id, page, min, max, category });
+    
+    let url = '';
     if(id === 'all')
     {
-        return axios.get(BOOK_API_BASE_URL + `/sorted-and-paged/by-collection?sortBy=price&page=${page === null ? 0 : page - 1}&size=12&sortOrder=asc${min ? `&min=${min}` : ''}${max ? `&max=${max}` : ''}${category ? `&categoryId=${category}` : ''}`)
+        url = BOOK_API_BASE_URL + `/sorted-and-paged/by-collection?sortBy=price&page=${page === null ? 0 : page - 1}&size=12&sortOrder=asc${min ? `&min=${min}` : ''}${max ? `&max=${max}` : ''}${category ? `&category=${category}` : ''}`;
+    } else {
+        url = BOOK_API_BASE_URL + `/sorted-and-paged/by-collection?collection=${id}&sortBy=price&page=${page -1}&size=12&sortOrder=asc${min ? `&min=${min}` : ''}${max ? `&max=${max}` : ''}${category ? `&category=${category}` : ''}`;
     }
-    return axios.get(BOOK_API_BASE_URL + `/sorted-and-paged/by-collection?collection=${id}&sortBy=price&page=${page -1}&size=12&sortOrder=asc${min ? `&min=${min}` : ''}${max ? `&max=${max}` : ''}${category ? `&categoryId=${category}` : ''}`)
+    
+    console.log('API URL:', url);
+    console.log('Full URL with base:', url);
+    return axios.get(url);
 }
 
 const getBooksBySearchValue = (value) => {

@@ -131,7 +131,7 @@ const BooksByCollection = () => {
         }
         
         if (category) {
-            query += `&categoryId=${category}`;
+            query += `&category=${category}`;
         }
         
         if (min) {
