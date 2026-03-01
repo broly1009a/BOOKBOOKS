@@ -13,14 +13,15 @@ const BooksByCollection = () => {
     const book_length = useRef(0)
     const [categories, setCategories] = useState([])
     const [curCollection, setCurCollection] = useState()
+    const [selectedCategory, setSelectedCategory] = useState(null)
     const { id } = useParams()
     const urlParams = new URLSearchParams(window.location.search);
-    const [page, setPage] = useState(urlParams.get('page'));
+    const [page, setPage] = useState(parseInt(urlParams.get('page')) || 1);
     const [limit,] = useState(12);
     const totalPage = Math.ceil(book_length.current / limit);
    
     const fetchData = (id) => {
-        getBooksByQuery(id, page, urlParams.get('min'), urlParams.get('max'))
+        getBooksByQuery(id, page, urlParams.get('min'), urlParams.get('max'), urlParams.get('category'))
             .then(res => {
                 setBooks(res.data.content)
                 book_length.current = res.data.totalElements
@@ -41,85 +42,128 @@ const BooksByCollection = () => {
     const collection_items = collections.map(collection => (
         collection.isDisplay ? (
             <li key={collection.id}>
-                <Link to={`/collections/${collection.id}`}>{collection.name}</Link>
+                <Link to={`/collections/${collection.id}?page=1`}>{collection.name}</Link>
             </li>
         ) : null
     ));
 
     const setCurrentPage = (value) => {
         window.scrollTo(0, 0);
+        let newPage = page;
+        
         if (value === '&laquo;') {
-            setPage(1)
-            return
+            newPage = 1;
         }
         else if (value === '&lsaquo;') {
             if (page !== 1) {
-                setPage(page - 1)
+                newPage = page - 1;
+            } else {
+                return;
             }
-            return
         }
         else if (value === '&rsaquo;') {
-            if (page !== totalPage)
-                setPage(page + 1)
-            return
+            if (page !== totalPage) {
+                newPage = page + 1;
+            } else {
+                return;
+            }
         }
         else if (value === '&raquo;') {
-            setPage(totalPage)
-            return
+            newPage = totalPage;
         }
         else if (value === '...') {
-            return
+            return;
         }
-        setPage(value)
-        if (id === 'all')
-            navigate(`/collections/all?page=${page}`)
-        else
-            navigate(`/collections/${id}?page=${page}`)
+        else {
+            newPage = value;
+        }
+        
+        setPage(newPage);
+        
+        // Build URL with all filters
+        const params = new URLSearchParams();
+        params.set('page', newPage);
+        
+        const category = urlParams.get('category');
+        if (category) params.set('category', category);
+        
+        const min = urlParams.get('min');
+        if (min) params.set('min', min);
+        
+        const max = urlParams.get('max');
+        if (max) params.set('max', max);
+        
+        navigate(`/collections/${id}?${params.toString()}`);
     }
 
     const handlePrice = (e) => {
         const minValue = Number(e.target.dataset.min)
         const maxValue = Number(e.target.dataset.max)
+        const categoryParam = urlParams.get('category') ? `&category=${urlParams.get('category')}` : ''
+        
         if (minValue && maxValue)
         {
-            navigate(`/collections/${id}?min=${minValue}&max=${maxValue}${page ? `&page=${page}` : ''}`)
+            navigate(`/collections/${id}?page=1&min=${minValue}&max=${maxValue}${categoryParam}`)
         }
         else if (minValue)
         {
-            navigate(`/collections/${id}?min=${minValue}${page ? `&page=${page}` : ''}`)
+            navigate(`/collections/${id}?page=1&min=${minValue}${categoryParam}`)
         }
         else if (maxValue)
         {
-            navigate(`/collections/${id}?max=${maxValue}${page ? `&page=${page}` : ''}`)
+            navigate(`/collections/${id}?page=1&max=${maxValue}${categoryParam}`)
         }
         else
         {
-            navigate(`/collections/${id}${page ? `?page=${page}` : ''}`)
+            navigate(`/collections/${id}?page=1${categoryParam}`)
         }
     }
     const handleChange = (e) => {
         const value = e.target.value
+        const category = urlParams.get('category');
+        const min = urlParams.get('min');
+        const max = urlParams.get('max');
+        
+        let query = 'sorted-and-paged/by-collection?size=12';
+        
+        if (id !== 'all') {
+            query += `&collection=${id}`;
+        }
+        
+        if (category) {
+            query += `&categoryId=${category}`;
+        }
+        
+        if (min) {
+            query += `&min=${min}`;
+        }
+        
+        if (max) {
+            query += `&max=${max}`;
+        }
+        
         switch (value) {
             case 'manual':
+                fetchData(id);
                 break;
             case 'best-selling':
-                getBookByQuery('sorted-and-paged/by-collection?sortBy=sold&size=12')
+                getBookByQuery(query + '&sortBy=sold')
                     .then(res => setBooks(res.data.content))
                 break;
             case 'title-ascending':
-                getBookByQuery('sorted-and-paged/by-collection?sortBy=title&size=12')
+                getBookByQuery(query + '&sortBy=title')
                     .then(res => setBooks(res.data.content))
                 break;
             case 'title-descending':
-                getBookByQuery('sorted-and-paged/by-collection?sortBy=title&size=12&sortOrder=desc')
+                getBookByQuery(query + '&sortBy=title&sortOrder=desc')
                     .then(res => setBooks(res.data.content))
                 break;
             case 'price-ascending':
-                getBookByQuery('sorted-and-paged/by-collection?sortBy=price&size=12')
+                getBookByQuery(query + '&sortBy=price')
                     .then(res => setBooks(res.data.content))
                 break;
             case 'price-descending':
-                getBookByQuery('sorted-and-paged/by-collection?sortBy=price&size=12&sortOrder=desc')
+                getBookByQuery(query + '&sortBy=price&sortOrder=desc')
                     .then(res => setBooks(res.data.content))
                 break;
             default:
@@ -133,7 +177,13 @@ const BooksByCollection = () => {
 
     useEffect(() => {
         setPage(1)
+        setSelectedCategory(null)
     }, [id])
+
+    useEffect(() => {
+        const categoryParam = urlParams.get('category')
+        setSelectedCategory(categoryParam ? parseInt(categoryParam) : null)
+    }, [window.location.search])
     return (
         <>
             <Breadscrumb />
@@ -156,7 +206,7 @@ const BooksByCollection = () => {
                                                         <div className='panel'>
                                                             <ul className='no-bullets'>
                                                                 <li>
-                                                                    <Link to={`/collections/all`}>TẤT CẢ SẢN PHẨM</Link>
+                                                                    <Link to={`/collections/all?page=1`}>TẤT CẢ SẢN PHẨM</Link>
                                                                 </li>
                                                                 {collection_items}
                                                             </ul>
@@ -166,8 +216,42 @@ const BooksByCollection = () => {
                                             </div>
 
                                             <div className="accordion" id="accordionPanelsStayOpenExample">
-                                                <div className="accordion-item">
-                                                    <h2 className="accordion-header" id="panelsStayOpen-headingTwo">
+                                                <div className="accordion-item">                                                    <h2 className="accordion-header" id="panelsStayOpen-headingThree">
+                                                        <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="true" aria-controls="panelsStayOpen-collapseThree">
+                                                            Thể Loại
+                                                        </button>
+                                                    </h2>
+                                                    <div id="panelsStayOpen-collapseThree" className="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingThree">
+                                                        <div className='panel'>
+                                                            <ul className='no-bullets'>
+                                                                {urlParams.get('category') && (
+                                                                    <li>
+                                                                        <Link 
+                                                                            to={`/collections/${id}?page=1${urlParams.get('min') ? `&min=${urlParams.get('min')}` : ''}${urlParams.get('max') ? `&max=${urlParams.get('max')}` : ''}`}
+                                                                            style={{ color: '#d51c24', fontWeight: 'bold' }}
+                                                                        >
+                                                                            ✕ Xóa bộ lọc thể loại
+                                                                        </Link>
+                                                                    </li>
+                                                                )}
+                                                                {categories.map(category => (
+                                                                    <li key={category.id}>
+                                                                        <Link 
+                                                                            to={`/collections/${id}?page=1&category=${category.id}${urlParams.get('min') ? `&min=${urlParams.get('min')}` : ''}${urlParams.get('max') ? `&max=${urlParams.get('max')}` : ''}`}
+                                                                            style={selectedCategory === category.id ? { color: '#d51c24', fontWeight: 'bold' } : {}}
+                                                                        >
+                                                                            {category.name}
+                                                                        </Link>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="accordion" id="accordionPanelsStayOpenExample">
+                                                <div className="accordion-item">                                                    <h2 className="accordion-header" id="panelsStayOpen-headingTwo">
                                                         <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
                                                             Khoảng Giá
                                                         </button>
@@ -232,7 +316,14 @@ const BooksByCollection = () => {
                                         <div className='row'>
                                             <div className='col-lg-6'>
                                                 <div className='collection-title'>
-                                                    <h3>{curCollection ? curCollection.name : "TẤT CẢ SẢN PHẨM"}</h3>
+                                                    <h3>
+                                                        {curCollection ? curCollection.name : "TẤT CẢ SẢN PHẨM"}
+                                                        {selectedCategory && categories.length > 0 && (
+                                                            <span style={{ fontSize: '0.8em', color: '#666', marginLeft: '10px' }}>
+                                                                • {categories.find(c => c.id === selectedCategory)?.name}
+                                                            </span>
+                                                        )}
+                                                    </h3>
                                                 </div>
                                             </div>
                                             <div className='col-lg-6'>
@@ -270,6 +361,11 @@ const BooksByCollection = () => {
                                                                 </div>
                                                             </div>
                                                             <div className="product-info">
+                                                                {book.category && (
+                                                                    <div style={{ fontSize: '0.85em', color: '#888', marginBottom: '5px' }}>
+                                                                        {book.category.name}
+                                                                    </div>
+                                                                )}
                                                                 <div className="product-title">
                                                                     <Link className="text-container" to={`/products/${book.id}`}>{book.title}</Link>
                                                                 </div>

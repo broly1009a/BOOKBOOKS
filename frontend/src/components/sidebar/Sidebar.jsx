@@ -16,6 +16,7 @@ import ArticleIcon from '@mui/icons-material/Article';
 import QueueIcon from '@mui/icons-material/Queue';
 import SlideshowIcon from '@mui/icons-material/Slideshow';
 import AssuredWorkloadIcon from '@mui/icons-material/AssuredWorkload';
+import CategoryIcon from '@mui/icons-material/Category';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import GroupIcon from '@mui/icons-material/Group';
 import BadgeIcon from '@mui/icons-material/Badge';
@@ -88,6 +89,12 @@ const Sidebar = () => {
             <li className={isActive("/publishers") ? "active" : ""}>
               <AssuredWorkloadIcon className="icon" />
               <span>Publishers</span>
+            </li>
+          </Link>
+          <Link to="/categories" style={{ textDecoration: 'none' }}>
+            <li className={isActive("/categories") ? "active" : ""}>
+              <CategoryIcon className="icon" />
+              <span>Categories</span>
             </li>
           </Link>
           

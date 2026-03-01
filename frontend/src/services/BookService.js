@@ -22,12 +22,12 @@ const getBooksByCollectionId = (id) => {
     return axios.get(BOOK_API_BASE_URL + '/sorted-and-paged/by-collection?collection=' + id )
 }
 
-const getBooksByQuery = (id, page, min, max) => {
+const getBooksByQuery = (id, page, min, max, category) => {
     if(id === 'all')
     {
-        return axios.get(BOOK_API_BASE_URL + `/sorted-and-paged/by-collection?sortBy=price&page=${page === null ? 0 : page - 1}&size=12&sortOrder=asc${min ? `&min=${min}` : ''}${max ? `&max=${max}` : ''}`)
+        return axios.get(BOOK_API_BASE_URL + `/sorted-and-paged/by-collection?sortBy=price&page=${page === null ? 0 : page - 1}&size=12&sortOrder=asc${min ? `&min=${min}` : ''}${max ? `&max=${max}` : ''}${category ? `&categoryId=${category}` : ''}`)
     }
-    return axios.get(BOOK_API_BASE_URL + `/sorted-and-paged/by-collection?collection=${id}&sortBy=price&page=${page -1}&size=12&sortOrder=asc${min ? `&min=${min}` : ''}${max ? `&max=${max}` : ''}`)
+    return axios.get(BOOK_API_BASE_URL + `/sorted-and-paged/by-collection?collection=${id}&sortBy=price&page=${page -1}&size=12&sortOrder=asc${min ? `&min=${min}` : ''}${max ? `&max=${max}` : ''}${category ? `&categoryId=${category}` : ''}`)
 }
 
 const getBooksBySearchValue = (value) => {

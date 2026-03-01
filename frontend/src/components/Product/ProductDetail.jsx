@@ -271,6 +271,12 @@ const ProductDetail = ({ cookies, cart, cartChange, setCartChange, profile }) =>
                                                         Nhà xuất bản:
                                                         {book.publisher?.name} 
                                                     </li>
+                                                    {book.category && (
+                                                        <li>
+                                                            Thể loại:
+                                                            <strong> {book.category.name}</strong>
+                                                        </li>
+                                                    )}
                                                 </ul>
                                             </div>
                                         </Col>

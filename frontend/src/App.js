@@ -10,6 +10,7 @@ import { addPublisher } from "./service/PublisherService";
 import { addSlider } from "./service/SliderService";
 import { addCollection } from "./service/CollectionService";
 import { addAuthor } from "./service/AuthorService";
+import { addCategory } from "./service/CategoryService";
 
 // Context
 import { DarkModeContext } from "./context/darkModeContext";
@@ -61,9 +62,11 @@ import SaleOrderDetail from "./pages/order/SaleOrderDetail";
 import Collection from "./pages/collection/Collection";
 import Slider from "./pages/slider/Slider";
 import Publisher from "./pages/publisher/Publisher";
+import Category from "./pages/category/Category";
 import CollectionSingle from "./pages/collection/CollectionSingle";
 import SliderSingle from "./pages/slider/SliderSingle";
 import PublisherSingle from "./pages/publisher/PublisherSingle";
+import CategorySingle from "./pages/category/CategorySingle";
 import AuthorSingle from "./pages/single/AuthorSingle";
 import Post from "./pages/post/Post";
 import PostSingle from "./pages/post/PostSingle";
@@ -81,7 +84,7 @@ import Staff from "./pages/staff/Staff";
 import AddStaff from "./components/User/AddStaff";
 
 // Form inputs and styles
-import { productInputs, authorInputs, userInputs, collectionInputs, sliderInputs, publisherInputs } from "./formSource";
+import { productInputs, authorInputs, userInputs, collectionInputs, sliderInputs, publisherInputs, categoryInputs } from "./formSource";
 import "./style/dark.scss";
 
 function App() {
@@ -129,6 +132,7 @@ function App() {
                         location.pathname.startsWith('/collections') ||
                         location.pathname.startsWith('/sliders') ||
                         location.pathname.startsWith('/publishers') ||
+                        location.pathname.startsWith('/categories') ||
                         location.pathname.startsWith('/posts') ||
                         location.pathname.startsWith('/post-categories') ||
                         location.pathname.startsWith('/feedbacks') ||
@@ -173,9 +177,9 @@ function App() {
           <Route path="/admin" element={<RoleBasedRoute allowedRoles={['ADMIN']}><Home /></RoleBasedRoute>} />
           
           <Route path="/authors">
-            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><List type={'authors'} /></RoleBasedRoute>} />
-            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><AuthorSingle /></RoleBasedRoute>} />
-            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><New inputs={authorInputs} title="Add New Author" handleAdd={addAuthor} location={'/authors'} /></RoleBasedRoute>} />
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><List type={'authors'} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><AuthorSingle /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><New inputs={authorInputs} title="Add New Author" handleAdd={addAuthor} location={'/authors'} /></RoleBasedRoute>} />
           </Route>
           
           <Route path="/products">
@@ -198,9 +202,9 @@ function App() {
           </Route>
           
           <Route path="/collections">
-            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Collection /></RoleBasedRoute>} />
-            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><New inputs={collectionInputs} title="Add New Collection" location={'/collections'} handleAdd={addCollection} /></RoleBasedRoute>} />
-            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><CollectionSingle /></RoleBasedRoute>} />
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><Collection /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><New inputs={collectionInputs} title="Add New Collection" location={'/collections'} handleAdd={addCollection} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}><CollectionSingle /></RoleBasedRoute>} />
           </Route>
           
           <Route path="/sliders">
@@ -213,6 +217,12 @@ function App() {
             <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Publisher /></RoleBasedRoute>} />
             <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><New inputs={publisherInputs} title="Add New Publisher" location={'/publishers'} handleAdd={addPublisher} /></RoleBasedRoute>} />
             <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><PublisherSingle /></RoleBasedRoute>} />
+          </Route>
+          
+          <Route path="/categories">
+            <Route index element={<RoleBasedRoute allowedRoles={['ADMIN']}><Category /></RoleBasedRoute>} />
+            <Route path="new" element={<RoleBasedRoute allowedRoles={['ADMIN']}><New inputs={categoryInputs} title="Add New Category" location={'/categories'} handleAdd={addCategory} /></RoleBasedRoute>} />
+            <Route path=":id" element={<RoleBasedRoute allowedRoles={['ADMIN']}><CategorySingle /></RoleBasedRoute>} />
           </Route>
           
           <Route path="/posts">

@@ -152,3 +152,12 @@ export const userInputs = [
       placeholder: "https://nxbkimdong.com.vn/",
     }
   ]
+
+  export const categoryInputs = [
+    {
+      id: 'name',
+      label: "Name",
+      type: "text",
+      placeholder: "Văn học",
+    }
+  ]

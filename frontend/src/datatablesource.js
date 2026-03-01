@@ -212,3 +212,8 @@ export const staffColumns = [
     }
   }
 ]
+
+export const categoryColumns = [
+  { field: "id", headerName: "ID", width: 70 },
+  { field: "name", headerName: "Name", width: 250 },
+]
